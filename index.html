@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="써니의 하루">
+<title>써니의 하루</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FAF7F2;--ww:#FDF9F4;--sand:#E8DDD0;--sand2:#D4C4B4;
+  --tc:#C4715A;--tcl:#E8957E;--tcp:#F5E4DF;
+  --dk:#2D1F14;--mid:#7A6152;--lt:#B09A8A;
+  --sage:#8FAF8A;--sagep:#E8F0E7;--ok:#6B9E6B;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overscroll-behavior:none}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--cream);color:var(--dk)}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 15%,rgba(196,113,90,.06) 0%,transparent 55%),radial-gradient(ellipse at 85% 85%,rgba(143,175,138,.06) 0%,transparent 55%);pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;max-width:430px;margin:0 auto;height:100dvh;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── screens ── */
+.sc{display:none;flex-direction:column;height:100%;animation:fu .3s ease}
+.sc.on{display:flex}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── compact top bar ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 10px;flex-shrink:0}
+.topbar-left{}
+.topbar-date{font-size:10px;letter-spacing:.1em;color:var(--lt);text-transform:uppercase;font-weight:300}
+.topbar-title{font-family:'Nanum Myeongjo',serif;font-size:20px;font-weight:800;line-height:1.2;margin-top:1px}
+.topbar-title span{color:var(--tc)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.icon-btn{display:inline-flex;align-items:center;gap:4px;background:var(--ww);border:1.5px solid var(--sand);border-radius:20px;padding:6px 11px;font-size:13px;color:var(--mid);cursor:pointer;white-space:nowrap;transition:all .15s;font-family:'Noto Sans KR',sans-serif}
+.icon-btn:active{background:var(--sand);border-color:var(--sand2)}
+.icon-btn .ib-ico{font-size:15px;line-height:1}
+
+/* ── mode toggle ── */
+.mtog{display:flex;margin:0 16px 12px;background:var(--sand);border-radius:12px;padding:3px;gap:3px;flex-shrink:0}
+.mbtn{flex:1;padding:9px;border:none;background:transparent;border-radius:9px;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--mid);cursor:pointer;transition:all .18s;line-height:1}
+.mbtn.on{background:var(--ww);color:var(--tc);font-weight:500;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* ── scroll area ── */
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 8px}
+
+/* ── section label ── */
+.slbl{font-size:10px;font-weight:500;letter-spacing:.1em;color:var(--lt);text-transform:uppercase;padding:0 16px;margin-bottom:8px}
+.sdiv{height:1px;background:var(--sand);margin:8px 16px 12px}
+
+/* ── chip grid ── */
+.chip-grid{padding:0 16px;margin-bottom:14px;display:block;line-height:1}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:7px 10px;background:var(--ww);border:1.5px solid var(--sand);border-radius:30px;font-size:13px;color:var(--dk);cursor:pointer;transition:all .15s;user-select:none;margin:0 5px 7px 0}
+.chip.sel{background:var(--tcp);border-color:var(--tc);color:var(--tc);font-weight:500}
+.chip-ck{width:0;height:0;overflow:hidden;border-radius:50%;background:var(--tc);display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:0;color:#fff;flex-shrink:0;margin-left:0}
+.chip.sel .chip-ck{width:14px;height:14px;font-size:8px;margin-left:2px}
+
+/* ── inline detail (inside list item) ── */
+.ti-det{margin-top:8px;border-top:1px dashed var(--sand);padding-top:7px}
+.ti-det-rows{display:flex;flex-direction:column;gap:3px;margin-bottom:5px}
+.ti-det-row{display:flex;align-items:center;gap:5px}
+.ti-det-txt{flex:1;font-size:12px;color:var(--mid)}
+.ti-det-rm{background:none;border:none;color:var(--lt);font-size:16px;cursor:pointer;padding:3px 4px;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center;line-height:1}
+.ti-det-inp-row{display:flex;align-items:center;gap:6px}
+.ti-det-inp{flex:1;border:none;background:transparent;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--dk);outline:none;padding:4px 0}
+.ti-det-inp::placeholder{color:var(--lt)}
+.ti-det-toggle{font-size:11px;color:var(--lt);background:none;border:none;cursor:pointer;padding:5px 0 0;text-decoration:underline;text-align:left;display:block}
+
+/* ── custom input ── */
+.cust-wrap{margin:0 16px 12px}
+.cust-box{background:var(--ww);border:1.5px solid var(--sand);border-radius:14px;padding:10px 12px;transition:border-color .2s}
+.cust-box:focus-within{border-color:var(--tcl)}
+.cust-top{display:flex;align-items:center;gap:8px}
+.cust-inp{flex:1;border:none;background:transparent;font-family:'Noto Sans KR',sans-serif;font-size:14px;color:var(--dk);outline:none;padding:2px 0}
+.cust-inp::placeholder{color:var(--lt)}
+.add-btn{background:var(--tc);border:none;border-radius:9px;min-width:36px;min-height:36px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:22px;flex-shrink:0;transition:transform .12s}
+.add-btn:active{transform:scale(.88)}
+.cust-subs{margin-top:6px;display:flex;flex-direction:column;gap:2px}
+.csub-item{display:flex;align-items:center;gap:6px;padding:2px 0}
+.csub-txt{flex:1;font-size:12px;color:var(--mid)}
+.csub-rm{background:none;border:none;color:var(--lt);font-size:16px;cursor:pointer;padding:4px;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center}
+.csub-row{display:none;align-items:center;gap:6px;margin-top:6px;padding-top:6px;border-top:1px dashed var(--sand)}
+.csub-row.open{display:flex}
+.csub-inp{flex:1;border:none;background:transparent;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--dk);outline:none;padding:2px 0}
+.csub-inp::placeholder{color:var(--lt)}
+.csub-toggle{font-size:13px;color:var(--tc);background:var(--tcp);border:1.5px solid var(--tcp);border-radius:20px;cursor:pointer;padding:8px 14px;display:none;text-align:center;margin-top:8px;min-height:36px;width:100%;font-family:'Noto Sans KR',sans-serif;font-weight:400}
+
+/* ── todo list items ── */
+.lst{padding:0 16px;display:flex;flex-direction:column;gap:7px}
+.ti{display:flex;align-items:flex-start;background:var(--ww);border:1.5px solid var(--sand);border-radius:13px;padding:11px 11px;gap:10px}
+.ti.done{background:var(--sagep);border-color:transparent}
+.ck{width:26px;height:26px;border-radius:50%;border:2px solid var(--sand);background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;cursor:pointer;margin-top:1px}
+.ti.done .ck{background:var(--sage);border-color:var(--sage)}
+.ck svg{opacity:0;transition:opacity .18s}
+.ti.done .ck svg{opacity:1}
+.ti-body{flex:1;min-width:0;cursor:pointer}
+.ti-lbl{font-size:14px;color:var(--dk);line-height:1.4;transition:color .18s}
+.ti.done .ti-lbl{color:var(--lt);text-decoration:line-through}
+.ti-subs{margin-top:3px;display:flex;flex-direction:column;gap:1px}
+.ti-sub{font-size:12px;color:var(--lt);line-height:1.4}
+.ti.done .ti-sub{opacity:.5}
+.ti-rm{background:none;border:none;color:var(--lt);font-size:18px;cursor:pointer;padding:4px 4px;line-height:1;flex-shrink:0;opacity:.3;min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center}
+.empty{text-align:center;padding:28px 20px;color:var(--lt);font-size:13px;line-height:1.8}
+.empty-ico{font-size:28px;margin-bottom:8px;display:block;opacity:.35}
+
+/* ── progress ── */
+.prog{margin:0 16px 12px;flex-shrink:0}
+.prog-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--lt);margin-bottom:6px}
+.prog-meta strong{color:var(--tc);font-weight:500}
+.prog-track{height:5px;background:var(--sand);border-radius:10px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--tcl),var(--tc));border-radius:10px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+
+/* ── done banner ── */
+.done-banner{margin:0 16px 10px;background:var(--sagep);border:1.5px solid var(--sage);border-radius:14px;padding:13px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.db-ico{font-size:22px;flex-shrink:0}
+.db-txt{flex:1}
+.db-title{font-family:'Nanum Myeongjo',serif;font-size:15px;font-weight:700;color:var(--ok)}
+.db-sub{font-size:11px;color:var(--mid);margin-top:1px}
+.db-undo{background:none;border:1.5px solid var(--sage);border-radius:8px;padding:7px 12px;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--ok);cursor:pointer;white-space:nowrap;flex-shrink:0;min-height:36px}
+
+/* ── save btn ── */
+.save-area{padding:10px 16px 28px;flex-shrink:0}
+.save-btn{width:100%;padding:16px;background:var(--tc);color:#fff;border:none;border-radius:14px;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:all .18s;box-shadow:0 3px 14px rgba(196,113,90,.28)}
+.save-btn:active{transform:scale(.98);box-shadow:none}
+.save-btn.saved{background:var(--sage);box-shadow:0 3px 14px rgba(107,158,107,.28)}
+
+/* ── onboard / settings ── */
+.ob-hdr{padding:44px 20px 16px}
+.ob-ttl{font-family:'Nanum Myeongjo',serif;font-size:24px;font-weight:800;line-height:1.3;margin-bottom:6px}
+.ob-ttl span{color:var(--tc)}
+.ob-sub{font-size:13px;color:var(--mid);font-weight:300;line-height:1.6}
+.ob-grid{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px;margin-bottom:20px}
+.ob-chip{display:flex;align-items:center;gap:5px;padding:10px 13px;background:var(--ww);border:1.5px solid var(--sand);border-radius:30px;font-size:13px;color:var(--dk);cursor:pointer;transition:all .15s;user-select:none}
+.ob-chip.sel{background:var(--tcp);border-color:var(--tc);color:var(--tc);font-weight:500}
+.ob-ca{margin:0 16px 18px}
+.ob-ca-lbl{font-size:10px;font-weight:500;letter-spacing:.1em;color:var(--lt);text-transform:uppercase;margin-bottom:9px}
+.ob-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px}
+.ob-tag{display:flex;align-items:center;gap:5px;padding:7px 11px;background:var(--tcp);border:1.5px solid var(--tc);border-radius:25px;font-size:12px;color:var(--tc)}
+.ob-tag button{background:none;border:none;color:var(--tc);font-size:15px;cursor:pointer;padding:0;line-height:1;min-width:24px;min-height:24px;display:flex;align-items:center;justify-content:center}
+.ob-inp-row{display:flex;gap:8px;align-items:center;background:var(--ww);border:1.5px solid var(--sand);border-radius:12px;padding:10px 12px}
+.ob-inp-row:focus-within{border-color:var(--tcl)}
+.ob-inp{flex:1;border:none;background:transparent;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--dk);outline:none;padding:2px 0}
+.ob-inp::placeholder{color:var(--lt)}
+.ob-btn-area{padding:10px 16px 28px;flex-shrink:0}
+.ob-btn{width:100%;padding:16px;background:var(--tc);color:#fff;border:none;border-radius:14px;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:500;cursor:pointer;box-shadow:0 3px 14px rgba(196,113,90,.28);transition:all .18s}
+
+/* ── set back btn ── */
+.back-btn{display:flex;align-items:center;gap:4px;background:none;border:none;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--mid);cursor:pointer;padding:0}
+
+/* ── modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(45,31,20,.4);z-index:200;align-items:flex-end;justify-content:center}
+.modal-box{background:var(--ww);border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:430px}
+.modal-title{font-family:'Nanum Myeongjo',serif;font-size:18px;font-weight:800;color:var(--dk);margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--mid);font-weight:300;line-height:1.6;margin-bottom:20px}
+.modal-btns{display:flex;flex-direction:column;gap:8px}
+.modal-btn-new{width:100%;padding:15px;background:var(--tc);color:#fff;border:none;border-radius:13px;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:500;cursor:pointer}
+.modal-btn-keep{width:100%;padding:15px;background:var(--sand);color:var(--mid);border:none;border-radius:13px;font-family:'Noto Sans KR',sans-serif;font-size:14px;cursor:pointer}
+
+/* ── reset btn ── */
+.reset-btn{display:inline-flex;align-items:center;gap:4px;background:var(--ww);border:1.5px solid var(--sand);border-radius:20px;padding:6px 11px;font-size:13px;color:var(--mid);cursor:pointer;white-space:nowrap;transition:all .15s;font-family:'Noto Sans KR',sans-serif}
+.reset-btn:active{background:var(--tcp);border-color:var(--tc);color:var(--tc)}
+
+/* ── toast ── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--dk);color:#fff;padding:9px 18px;border-radius:18px;font-size:12px;opacity:0;transition:all .25s;pointer-events:none;z-index:100;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ ONBOARD ══ -->
+<div class="sc on" id="sc-ob">
+  <div class="ob-hdr">
+    <div class="ob-ttl">안녕하세요,<br><span>써니</span> 👋</div>
+    <div class="ob-sub">자주 하는 일들을 골라주세요.<br>나중에 언제든 바꿀 수 있어요.</div>
+  </div>
+  <div class="scroll">
+    <div class="slbl">자주 하는 일 선택</div>
+    <div class="ob-grid" id="ob-grid"></div>
+    <div class="ob-ca">
+      <div class="ob-ca-lbl">목록에 없으면 직접 추가</div>
+      <div class="ob-tags" id="ob-tags"></div>
+      <div class="ob-inp-row">
+        <input class="ob-inp" id="ob-inp" placeholder="예) 독서, 운동…" maxlength="20">
+        <button class="add-btn" id="ob-add">+</button>
+      </div>
+    </div>
+  </div>
+  <div class="ob-btn-area">
+    <button class="ob-btn" id="ob-start">시작하기</button>
+  </div>
+</div>
+
+<!-- ══ EVENING ══ -->
+<div class="sc" id="sc-eve">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-date" id="date-eve"></div>
+      <div class="topbar-title">써니의 <span>오늘 하루</span></div>
+    </div>
+    <div class="topbar-right">
+      <button class="reset-btn" id="reset-eve-btn"><span class="ib-ico">🔄</span>초기화</button>
+      <button class="icon-btn" id="gear-btn"><span class="ib-ico">⚙️</span>설정</button>
+    </div>
+  </div>
+  <div class="mtog">
+    <button class="mbtn on" id="mb-eve">🌙 저녁 · 계획</button>
+    <button class="mbtn" id="mb-mor">☀️ 아침 · 확인</button>
+  </div>
+  <div class="scroll" id="eve-scroll">
+    <div class="slbl">자주 하는 일</div>
+    <div class="chip-grid" id="chip-grid"></div>
+    <div class="sdiv"></div>
+    <div class="slbl">직접 추가</div>
+    <div class="cust-wrap">
+      <div class="cust-box">
+        <div class="cust-top">
+          <input class="cust-inp" id="cust-inp" placeholder="할 일 입력…" maxlength="30" autocomplete="off">
+          <button class="add-btn" id="cust-add">+</button>
+        </div>
+        <div class="cust-subs" id="cust-subs"></div>
+        <div class="csub-row" id="csub-row">
+          <span style="font-size:11px;color:var(--lt);flex-shrink:0">· 세부</span>
+          <input class="csub-inp" id="csub-inp" placeholder="입력 후 엔터…" maxlength="30">
+        </div>
+      </div>
+      <button class="csub-toggle" id="csub-toggle">+ 세부사항 추가</button>
+    </div>
+    <div class="sdiv"></div>
+    <div class="slbl">내일 할 일 <span id="list-cnt" style="color:var(--tc)"></span></div>
+    <div class="lst" id="eve-list">
+      <div class="empty"><span class="empty-ico">📝</span>위에서 탭해서 추가해보세요</div>
+    </div>
+  </div>
+  <div class="save-area">
+    <button class="save-btn" id="save-btn">저장하기</button>
+  </div>
+</div>
+
+<!-- ══ MORNING ══ -->
+<div class="sc" id="sc-mor">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-date" id="date-mor"></div>
+      <div class="topbar-title">좋은 아침, <span>써니</span> ☀️</div>
+    </div>
+  </div>
+  <div class="mtog">
+    <button class="mbtn" id="mb-eve2">🌙 저녁 · 계획</button>
+    <button class="mbtn on" id="mb-mor2">☀️ 아침 · 확인</button>
+  </div>
+  <div class="prog" id="prog" style="display:none">
+    <div class="prog-meta"><span>완료</span><strong id="prog-txt">0 / 0</strong></div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="done-banner" id="done-banner" style="display:none">
+    <span class="db-ico">🎉</span>
+    <div class="db-txt">
+      <div class="db-title">모두 완료!</div>
+      <div class="db-sub">오늘도 수고했어요, 써니 👏</div>
+    </div>
+    <button class="db-undo" id="undo-btn">되돌리기</button>
+  </div>
+  <div class="scroll">
+    <div class="lst" id="mor-list">
+      <div class="empty"><span class="empty-ico">🌿</span>저녁에 할 일을 먼저 추가해보세요</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETTINGS ══ -->
+<div class="sc" id="sc-set">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title" style="font-size:18px">설정</div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="set-back">✕</button>
+    </div>
+  </div>
+  <div class="scroll">
+    <div class="slbl">항목 편집</div>
+    <div class="ob-grid" id="set-grid"></div>
+    <div class="ob-ca">
+      <div class="ob-ca-lbl">직접 추가한 항목</div>
+      <div class="ob-tags" id="set-tags"></div>
+      <div class="ob-inp-row">
+        <input class="ob-inp" id="set-inp" placeholder="새 항목 추가…" maxlength="20">
+        <button class="add-btn" id="set-add">+</button>
+      </div>
+    </div>
+  </div>
+  <div class="ob-btn-area">
+    <button class="ob-btn" id="set-save">저장하고 돌아가기</button>
+  </div>
+</div>
+
+</div>
+<!-- ══ RESET CONFIRM MODAL ══ -->
+<div class="modal-overlay" id="reset-modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">목록을 초기화할까요?</div>
+    <div class="modal-sub">지금 작성한 할 일이 모두 지워져요.<br>아침 리스트는 유지돼요.</div>
+    <div class="modal-btns">
+      <button class="modal-btn-new" onclick="resetEve();renderEve();hideResetModal()">초기화하기</button>
+      <button class="modal-btn-keep" onclick="hideResetModal()">취소</button>
+    </div>
+  </div>
+</div>
+<!-- ══ NEW DAY MODAL ══ -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">새 날이 시작됐어요 ☀️</div>
+    <div class="modal-sub">어제 작성한 목록이 있어요.<br>새로 작성하시겠어요?</div>
+    <div class="modal-btns">
+      <button class="modal-btn-new" onclick="resetEve();hideModal();showScreen('eve')">새로 작성하기</button>
+      <button class="modal-btn-keep" onclick="hideModal();showScreen('eve')">어제 목록 이어서 쓰기</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── PRESETS ── */
+const PRESETS=[
+  {id:'shopping',icon:'🛒',label:'장보기',      det:true, ph:'살 것 추가…'},
+  {id:'hospital',icon:'🏥',label:'병원·약국',   det:false},
+  {id:'medicine',icon:'💊',label:'약 챙기기',   det:false},
+  {id:'cleaning',icon:'🧹',label:'청소',        det:false},
+  {id:'laundry', icon:'🧺',label:'빨래',        det:false},
+  {id:'plants',  icon:'🌿',label:'화분 물주기', det:false},
+  {id:'call',    icon:'📞',label:'전화·연락',   det:true, ph:'누구에게…'},
+  {id:'bank',    icon:'🏦',label:'은행·공과금', det:false},
+  {id:'family',  icon:'👨‍👩‍👧',label:'가족 챙기기', det:true, ph:'메모…'},
+  {id:'cooking', icon:'🍱',label:'반찬 만들기', det:true, ph:'뭐 만들지…'},
+  {id:'hair',    icon:'✂️',label:'미용실',      det:false},
+  {id:'car',     icon:'🚗',label:'차 관련',     det:false},
+  {id:'parcel',  icon:'📦',label:'택배·우체국', det:false},
+];
+
+/* ── STATE ── */
+let cfg={onboarded:false,enabledIds:[],customPresets:[]};
+let eve={sel:new Set(),details:{},customs:[]};
+let mor={items:[],checked:new Set()};
+let obSel=new Set(), obCustom=[];
+let custSubOpen=false, custSubItems=[];
+let lastChecked=null;
+
+/* ── PERSIST ── */
+function todayStr(){const n=new Date();return `${n.getFullYear()}-${n.getMonth()+1}-${n.getDate()}`;}
+function saveCfg(){localStorage.setItem('s_cfg',JSON.stringify({...cfg,enabledIds:[...cfg.enabledIds]}));}
+function saveMor(){localStorage.setItem('s_mor',JSON.stringify({items:mor.items,checked:[...mor.checked]}));}
+function saveEve(){
+  localStorage.setItem('s_eve',JSON.stringify({
+    sel:[...eve.sel],
+    details:eve.details,
+    customs:eve.customs,
+    date:todayStr()
+  }));
+}
+function loadAll(){
+  try{const c=JSON.parse(localStorage.getItem('s_cfg')||'{}');if(c.onboarded)cfg=c;}catch(e){}
+  try{const m=JSON.parse(localStorage.getItem('s_mor')||'{}');if(m.items){mor.items=m.items;mor.checked=new Set(m.checked||[]);}}catch(e){}
+  try{
+    const e=JSON.parse(localStorage.getItem('s_eve')||'{}');
+    if(e.sel){
+      eve.sel=new Set(e.sel);
+      eve.details=e.details||{};
+      eve.customs=e.customs||[];
+    }
+  }catch(ex){}
+}
+function resetEve(){
+  eve={sel:new Set(),details:{},customs:[]};
+  saveEve();
+}
+
+/* ── INIT ── */
+window.addEventListener('DOMContentLoaded',()=>{
+  loadAll(); setDates();
+
+  /* onboard */
+  $('ob-start').onclick=finishOnboard;
+  $('ob-add').onclick=addObCustom;
+  on('ob-inp','keydown',e=>{if(e.key==='Enter'){e.preventDefault();addObCustom();}});
+
+  /* mode toggles */
+  $('mb-eve').onclick=()=>showScreen('eve');
+  $('mb-mor').onclick=()=>showScreen('mor');
+  $('mb-eve2').onclick=()=>showScreen('eve');
+  $('mb-mor2').onclick=()=>showScreen('mor');
+
+  /* evening */
+  $('cust-add').onclick=addCustItem;
+  on('cust-inp','keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCustItem();}});
+  on('cust-inp','input',()=>{
+    $('csub-toggle').style.display=$('cust-inp').value.trim()?'block':'none';
+  });
+  $('csub-toggle').onclick=toggleCustSub;
+  on('csub-inp','keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();addCustSub();}
+  });
+  $('save-btn').onclick=saveList;
+  $('gear-btn').onclick=()=>showScreen('set');
+
+  /* morning */
+  $('undo-btn').onclick=undoLast;
+
+  /* settings */
+  $('set-back').onclick=()=>showScreen('eve');
+  $('set-add').onclick=addSetCustom;
+  on('set-inp','keydown',e=>{if(e.key==='Enter'){e.preventDefault();addSetCustom();}});
+  $('set-save').onclick=saveSettings;
+
+  $('reset-eve-btn').onclick=()=>confirmReset();
+
+  if(!cfg.onboarded){renderObGrid();showSc('sc-ob');}
+  else{
+    const h=new Date().getHours();
+    const target=h>=5&&h<18?'mor':'eve';
+    if(target==='eve') checkDateAndShow();
+    else showScreen('mor');
+  }
+});
+
+function checkDateAndShow(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('s_eve')||'{}');
+    const savedDate=saved.date||'';
+    const today=todayStr();
+    if(savedDate && savedDate!==today && (eve.sel.size>0||eve.customs.length>0)){
+      showNewDayModal();
+      return;
+    }
+  }catch(e){}
+  showScreen('eve');
+}
+
+function showNewDayModal(){
+  $('modal-overlay').style.display='flex';
+}
+function hideModal(){
+  $('modal-overlay').style.display='none';
+}
+
+/* ── HELPERS ── */
+function $(id){return document.getElementById(id);}
+function on(id,ev,fn){$(id).addEventListener(ev,fn);}
+function mk(tag,cls){const e=document.createElement(tag);e.className=cls;return e;}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+
+/* ── DATES ── */
+function setDates(){
+  const D=['일','월','화','수','목','금','토'];
+  const n=new Date(),s=`${n.getMonth()+1}월 ${n.getDate()}일 (${D[n.getDay()]})`;
+  $('date-eve').textContent=s; $('date-mor').textContent=s;
+}
+
+/* ── SCREENS ── */
+function showSc(id){
+  ['sc-ob','sc-eve','sc-mor','sc-set'].forEach(x=>$(x).classList.remove('on'));
+  $(id).classList.add('on');
+}
+function showScreen(name){
+  showSc('sc-'+name);
+  if(name==='eve')renderEve();
+  if(name==='mor')renderMor();
+  if(name==='set')renderSet();
+}
+
+/* ── ONBOARD ── */
+function renderObGrid(){
+  const g=$('ob-grid');g.innerHTML='';
+  PRESETS.forEach(p=>{
+    const c=mk('div','ob-chip'+(obSel.has(p.id)?' sel':''));
+    c.textContent=`${p.icon} ${p.label}`;
+    c.onclick=()=>{obSel.has(p.id)?obSel.delete(p.id):obSel.add(p.id);renderObGrid();};
+    g.appendChild(c);
+  });
+  renderObTags();
+}
+function renderObTags(){
+  $('ob-tags').innerHTML=obCustom.map((t,i)=>`<div class="ob-tag">${t}<button onclick="rmObC(${i})">×</button></div>`).join('');
+}
+function addObCustom(){const v=$('ob-inp').value.trim();if(!v||obCustom.includes(v))return;obCustom.push(v);$('ob-inp').value='';renderObGrid();}
+function rmObC(i){obCustom.splice(i,1);renderObGrid();}
+function finishOnboard(){cfg.onboarded=true;cfg.enabledIds=[...obSel];cfg.customPresets=[...obCustom];saveCfg();showScreen('eve');}
+
+/* ── SETTINGS ── */
+function renderSet(){
+  const g=$('set-grid');g.innerHTML='';
+  PRESETS.forEach(p=>{
+    const sel=cfg.enabledIds.includes(p.id);
+    const c=mk('div','ob-chip'+(sel?' sel':''));
+    c.textContent=`${p.icon} ${p.label}`;
+    c.onclick=()=>{const i=cfg.enabledIds.indexOf(p.id);i>=0?cfg.enabledIds.splice(i,1):cfg.enabledIds.push(p.id);renderSet();};
+    g.appendChild(c);
+  });
+  renderSetTags();
+}
+function renderSetTags(){
+  $('set-tags').innerHTML=cfg.customPresets.map((t,i)=>`<div class="ob-tag">${t}<button onclick="rmSetC(${i})">×</button></div>`).join('');
+}
+function addSetCustom(){const v=$('set-inp').value.trim();if(!v||cfg.customPresets.includes(v))return;cfg.customPresets.push(v);$('set-inp').value='';renderSetTags();}
+function rmSetC(i){cfg.customPresets.splice(i,1);renderSetTags();}
+function saveSettings(){saveCfg();showScreen('eve');toast('설정 저장됐어요 ✓');}
+
+/* ── EVENING ── */
+function getActive(){
+  const p=PRESETS.filter(x=>cfg.enabledIds.includes(x.id));
+  const c=cfg.customPresets.map(l=>({id:'cp_'+l,icon:'📌',label:l,det:true,ph:'세부사항…'}));
+  return [...p,...c];
+}
+function renderEve(){renderChips();renderEveList();}
+
+function renderChips(){
+  const g=$('chip-grid');g.innerHTML='';
+  getActive().forEach(item=>{
+    const c=mk('div','chip'+(eve.sel.has(item.id)?' sel':''));
+    c.innerHTML=`<span>${item.icon}</span><span>${item.label}</span><span class="chip-ck">✓</span>`;
+    c.onclick=e=>{e.stopPropagation();toggleChip(item);};
+    g.appendChild(c);
+  });
+}
+function toggleChip(item){
+  if(eve.sel.has(item.id)){eve.sel.delete(item.id);delete eve.details[item.id];}
+  else{eve.sel.add(item.id);if(item.det)eve.details[item.id]=[];}
+  renderChips();renderEveList();saveEve();
+}
+
+/* detail panels moved inline */
+/* custom item */
+function toggleCustSub(){
+  custSubOpen=!custSubOpen;
+  $('csub-row').classList.toggle('open',custSubOpen);
+  $('csub-toggle').textContent=custSubOpen?'− 세부사항 닫기':'+ 세부사항 추가';
+  if(custSubOpen)setTimeout(()=>$('csub-inp').focus(),20);
+}
+function addCustSub(){
+  const v=$('csub-inp').value.trim();if(!v)return;
+  custSubItems.push(v);$('csub-inp').value='';
+  renderCustSubs();
+}
+function renderCustSubs(){
+  $('cust-subs').innerHTML=custSubItems.map((s,i)=>`
+    <div class="csub-item">
+      <span class="csub-txt">· ${s}</span>
+      <button class="csub-rm" onclick="rmCustSub(${i})">×</button>
+    </div>`).join('');
+}
+function rmCustSub(i){custSubItems.splice(i,1);renderCustSubs();}
+function addCustItem(){
+  const v=$('cust-inp').value.trim();if(!v)return;
+  eve.customs.push({label:v,subs:[...custSubItems]});
+  $('cust-inp').value='';custSubItems=[];custSubOpen=false;
+  $('csub-row').classList.remove('open');
+  $('csub-toggle').style.display='none';
+  $('csub-toggle').textContent='+ 세부사항 추가';
+  renderCustSubs();renderEveList();saveEve();
+}
+
+/* evening list */
+function buildEveItems(){
+  const items=[];
+  getActive().forEach(it=>{if(eve.sel.has(it.id))items.push({id:it.id,icon:it.icon,label:it.label,det:it.det,ph:it.ph,subs:eve.details[it.id]||[]});});
+  eve.customs.forEach((c,i)=>items.push({id:'cus_'+i,icon:'📌',label:c.label,det:false,subs:c.subs}));
+  return items;
+}
+function renderEveList(){
+  const el=$('eve-list'),items=buildEveItems();
+  $('list-cnt').textContent=items.length?`(${items.length})`:'';
+  if(!items.length){el.innerHTML='<div class="empty"><span class="empty-ico">📝</span>위에서 탭해서 추가해보세요</div>';return;}
+  const frags=items.map(it=>{
+    const subs=it.subs||[];
+    const subRows=subs.map((s,i)=>`<div class="ti-det-row"><span class="ti-det-txt">· ${s}</span><button class="ti-det-rm" onclick="event.stopPropagation();rmEveSub('${it.id}',${i})">×</button></div>`).join('');
+    const detHtml=it.det?`<div class="ti-det">
+      <div class="ti-det-rows" id="dr-${it.id}">${subRows}</div>
+      <div class="ti-det-inp-row">
+        <input class="ti-det-inp" id="di-${it.id}" placeholder="${it.ph||'세부사항 입력 후 엔터…'}" maxlength="30" autocomplete="off">
+      </div>
+    </div>`:'';
+    return `<div class="ti" id="ti-${it.id}">
+      <div class="ck" style="border-color:var(--tcl);background:var(--tcp)">
+        <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="var(--tc)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="ti-body" style="cursor:default">
+        <div class="ti-lbl">${it.icon} ${it.label}</div>
+        ${detHtml}
+      </div>
+      <button class="ti-rm" onclick="event.stopPropagation();rmEve('${it.id}')">×</button>
+    </div>`;
+  });
+  el.innerHTML=frags.join('');
+  // bind enter keys for inline detail inputs
+  items.filter(it=>it.det).forEach(it=>{
+    const inp=document.getElementById(`di-${it.id}`);
+    if(inp) inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addEveSub(it.id);}});
+  });
+}
+function addEveSub(id){
+  const inp=document.getElementById(`di-${id}`);
+  if(!inp) return;
+  const v=inp.value.trim(); if(!v) return;
+  if(!eve.details[id]) eve.details[id]=[];
+  eve.details[id].push(v); inp.value='';
+  renderEveList();
+  setTimeout(()=>{const i=document.getElementById(`di-${id}`);if(i)i.focus();},15);
+}
+function rmEveSub(id,i){
+  if(eve.details[id]) eve.details[id].splice(i,1);
+  renderEveList();saveEve();
+}
+function rmEve(id){
+  if(id.startsWith('cus_')){eve.customs.splice(parseInt(id.replace('cus_','')),1);}
+  else{eve.sel.delete(id);delete eve.details[id];renderChips();}
+  renderEveList();saveEve();
+}
+
+/* save */
+function confirmReset(){
+  $('reset-modal-overlay').style.display='flex';
+}
+function hideResetModal(){
+  $('reset-modal-overlay').style.display='none';
+}
+function saveList(){
+  const items=buildEveItems();
+  if(!items.length){toast('할 일을 먼저 추가해보세요 😊');return;}
+  mor.items=items.map(i=>({icon:i.icon,label:i.label,subs:i.subs}));
+  mor.checked=new Set();lastChecked=null;saveMor();saveEve();
+  const b=$('save-btn');b.textContent='저장 완료 ✓';b.classList.add('saved');
+  toast('아침에 바로 확인할 수 있어요 ☀️');
+  setTimeout(()=>{b.textContent='저장하기';b.classList.remove('saved');},2400);
+}
+
+/* ── MORNING ── */
+function renderMor(){
+  const el=$('mor-list'),items=mor.items;
+  const pw=$('prog'),db=$('done-banner');
+  if(!items.length){
+    el.innerHTML='<div class="empty"><span class="empty-ico">🌿</span>저녁에 할 일을 먼저 추가해보세요</div>';
+    pw.style.display='none';db.style.display='none';return;
+  }
+  pw.style.display='block';
+  const done=mor.checked.size,total=items.length;
+  $('prog-fill').style.width=(total?Math.round(done/total*100):0)+'%';
+  $('prog-txt').textContent=`${done} / ${total}`;
+  db.style.display=(done===total)?'flex':'none';
+  el.innerHTML=items.map((it,i)=>{
+    const ck=mor.checked.has(i);
+    const sh=it.subs&&it.subs.length?`<div class="ti-subs">${it.subs.map(s=>`<div class="ti-sub">· ${s}</div>`).join('')}</div>`:'';
+    return `<div class="ti${ck?' done':''}" onclick="toggleCk(${i})">
+      <div class="ck"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="ti-body"><div class="ti-lbl">${it.icon} ${it.label}</div>${sh}</div>
+    </div>`;
+  }).join('');
+}
+function toggleCk(i){
+  if(mor.checked.has(i)){mor.checked.delete(i);if(lastChecked===i)lastChecked=null;}
+  else{mor.checked.add(i);lastChecked=i;}
+  saveMor();renderMor();
+}
+function undoLast(){
+  if(lastChecked!==null){mor.checked.delete(lastChecked);lastChecked=null;}
+  else if(mor.checked.size){const l=Math.max(...mor.checked);mor.checked.delete(l);}
+  saveMor();renderMor();
+}
+</script>
+</body>
+</html>
